@@ -1,27 +1,40 @@
+import ControladorDataset
+import ControladorKmeans
 import numpy as np
-import csv
-import matplotlib.pyplot as plt
 
-#convertir CSV to Array text
-csv_filename = './dataset/dataset_3.csv'
-with open(csv_filename,newline='', encoding='utf-8') as f:
-    reader = csv.reader(f,delimiter=';') 
-    next(reader) #omite el encabezado
-    array_csv_lista = list(reader)
-    array_text_lista = np.array(array_csv_lista) #convierte lista en array
 
-# Crear una matriz para almacenar los valores de punto flotante
-matriz_float = np.empty_like(array_text_lista, dtype=float)
+# Definir el número del dataset que deseas cargar (1, 2 o 3)
+dataset = 1
+csv = f'./dataset/dataset_{dataset}.csv'
+matriz = ControladorDataset.cargar_dataset(csv)
 
-# Recorrer la matriz y convertir las cadenas en números de punto flotante
-for i in range(array_text_lista.shape[0]):
-    for j in range(array_text_lista.shape[1]):
-        elemento_str = array_text_lista[i, j]
-        elemento_float = float(elemento_str.replace(',', '.'))
-        matriz_float[i, j] = elemento_float
 
-#graficar los puntos recorriendo la matriz matriz_float
-for fila in matriz_float:
-    plt.plot(fila[0],fila[1],marker ="o",color ="green")
+#VER: si es necesario estandarizar los valores del dataset (segun la teoria recomendaba estadarizar)
+min_val = np.min(matriz, axis=0)
+max_val = np.max(matriz, axis=0)
+matriz_estandarizada = (matriz - min_val) / (max_val - min_val)
 
-plt.show()
+#Valores de k a considerar (de 2 a 5)
+valores_k = [2, 3, 4, 5]
+
+# Criterio de parada (1: No haya ninguna reasignación, 2: No haya ningún cambio de centroides)
+# VER: criterio de parada 3
+criterioParada = 1  
+
+# print("Matriz estandarizada:")
+# for fila in matriz_estandarizada:
+#     print(fila)
+
+for k in valores_k:
+    centroides, asignaciones = ControladorKmeans.k_means(matriz_estandarizada, k, criterioParada)
+    
+    inercia = 0
+    for i in range(len(matriz_estandarizada)):
+        punto = matriz_estandarizada[i]
+        cluster_id = asignaciones[i]
+        centroide = centroides[cluster_id]
+        distancia_cuadrada = sum((punto - centroide)**2)
+        inercia += distancia_cuadrada
+    
+    print(f'Clusters para k={k}, Inercia: {inercia}')
+    ControladorDataset.graficar_resultados(matriz_estandarizada, asignaciones, centroides)
