@@ -24,9 +24,39 @@ def centroideMasCercano(punto, centroides):
 
     return centroideCercano
 
-def k_means(datos, k, criterio_parada):
+# Fucion para la inicializacion heurística de k means ++
+def heuristica(datos, k):
 
-    centroides = datos[np.random.choice(range(len(datos)), k, replace=False)]
+    centroides = datos[np.random.choice(range(len(datos)), 1, replace=False)]
+    k_restantes = k-1
+
+    while(k_restantes):
+        distancias_maximas = np.full(len(datos), np.inf)
+        
+        for i, centroide in enumerate(centroides):
+            for j, dato in enumerate(datos):
+                distancia_nueva = distanciaEuclidiana(dato,centroide)
+                if(distancia_nueva <= distancias_maximas[j]):
+                    distancias_maximas[j] = distancia_nueva
+        
+        centroides = np.vstack([centroides, datos[np.argmax(distancias_maximas)]])
+        print(np.argmax(distancias_maximas))
+        print(datos[np.argmax(distancias_maximas)])
+
+        k_restantes -=1
+
+    print(centroides)   #centroides iniciales
+    return centroides
+
+def k_means(datos, k, criterio_parada, inicializacion):
+
+    #aqui se ejecutaria condicionalmente la inicializacion elegida
+    if(inicializacion):
+        centroides = datos[np.random.choice(range(len(datos)), k, replace=False)]   #k means normal
+        print(centroides)   #centroides iniciales
+    else:
+        centroides = heuristica(datos, k)   #k means ++
+
     asignaciones_previas = np.empty(0)
 
     iteracion = 1

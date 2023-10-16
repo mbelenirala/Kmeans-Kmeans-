@@ -15,7 +15,7 @@ def graficar():
     criterioParada = int(nroCritero.get())
     csv = f'./dataset/dataset_{dataset}.csv'
     matriz = ControladorDataset.cargar_dataset(csv)
-    centroides, asignaciones, pasos = ControladorKmeans.k_means(matriz, k, criterioParada)
+    centroides, asignaciones, pasos = ControladorKmeans.k_means(matriz, k, criterioParada, 0)
     
     # Muestra los pasos en el área de texto
     texto_area.delete(1.0, tk.END)  # Borra el contenido anterior
