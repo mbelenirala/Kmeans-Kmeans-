@@ -1,6 +1,10 @@
 import numpy as np
 import math
 import ControladorDataset
+from sklearn.datasets import load_iris
+from sklearn.cluster import KMeans
+from sklearn.metrics import calinski_harabasz_score
+import matplotlib.pyplot as plt
 
 def mostrar_resultados_kmeans(matriz_estandarizada, k, criterio_parada):
     centroides, asignaciones = k_means(matriz_estandarizada, k, criterio_parada)
@@ -24,7 +28,17 @@ def centroideMasCercano(punto, centroides):
 
     return centroideCercano
 
-# Fucion para la inicializacion heurística de k means ++
+# Función para obtener la media de los puntos de un cluster (para luego definir el nuevo centroide)
+def mediaDatos(puntos):
+    suma = [0,0]
+
+    for dato in puntos:
+        suma += dato
+    media = suma/len(puntos)
+
+    return media
+
+# Fución para la inicializacion heurística de k means ++
 def heuristica(datos, k):
 
     centroides = datos[np.random.choice(range(len(datos)), 1, replace=False)]
@@ -87,7 +101,7 @@ def k_means(datos, k, criterio_parada, inicializacion):
         for i in range(k):
             cluster_points = datos[asignaciones == i]
             if len(cluster_points) > 0:
-                nuevo_centroide = np.mean(cluster_points, axis=0)
+                nuevo_centroide = mediaDatos(cluster_points)             #nuevo_centroide = np.mean(cluster_points, axis=0)  CODIGO VIEJO
                 nuevos_centroides.append(nuevo_centroide)
             else:
                 nuevos_centroides.append(centroides[i])
@@ -111,8 +125,16 @@ def k_means(datos, k, criterio_parada, inicializacion):
         
         iteracion += 1
 
+    scoreCalisnkiHarabasz(datos,asignaciones)
+    
     return centroides, asignaciones, paso_a_paso
 
 def mostrar_resultados_kmeans_plus_plus(matriz_estandarizada, k, criterio_parada):
     # Por ahora, no hacemos nada en esta función
     pass
+
+# Función para calcular el Calinski-Harabasz Score
+def scoreCalisnkiHarabasz(datos, asignaciones):
+    ch_score = calinski_harabasz_score(datos, asignaciones)
+
+    print(f'C-H Score: {ch_score}')
