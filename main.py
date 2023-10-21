@@ -5,6 +5,7 @@ import ControladorDataset
 import ControladorKmeans
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import screeninfo
 
 def cerrar_programa():
     root.quit()
@@ -84,8 +85,15 @@ root = tk.Tk()
 root.title("K-Means")
 root.protocol("WM_DELETE_WINDOW", cerrar_programa)
 
+screen = screeninfo.get_monitors()[0]
+width, height = screen.width, screen.height
+
+# Establecer las dimensiones de la ventana principal
+root.geometry("%dx%d" % (width, height))
+#root.state("zoomed")
+
 mainFrame = ttk.Frame(root)
-mainFrame.pack(padx=20, pady=20)
+mainFrame.pack(padx=10, pady=10, fill='both', expand=True)
 
 datasetFrame = tk.LabelFrame(mainFrame, text="Dataset", font=("Arial", 14))
 datasetFrame.grid(row=0, column=0)
@@ -97,7 +105,7 @@ kmeansPlusFrame = tk.LabelFrame(mainFrame, text="Resultados K-Means++", font=("A
 kmeansPlusFrame.grid(row=0, column=2)
 
 controlesFrame = tk.LabelFrame(mainFrame)
-controlesFrame.grid(row=1, column=0, columnspan=2)
+controlesFrame.grid(row=1, column=0, columnspan=3, rowspan=2) 
 
 dataset_label = tk.Label(controlesFrame, text="Seleccionar Dataset:", font=("Arial", 14))
 dataset_label.grid(row=0, column=0)
