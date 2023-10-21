@@ -41,7 +41,18 @@ def mediaDatos(puntos):
 # Fución para la inicializacion heurística de k means ++
 def heuristica(datos, k):
 
-    centroides = datos[np.random.choice(range(len(datos)), 1, replace=False)]
+    # Elegir el primer centroide
+    # centroides = datos[np.random.choice(range(len(datos)), 1, replace=False)]      #ELEGIDO ALEATORIAMENTE
+    punto_medio = mediaDatos(datos)
+    distancia_minima = float('inf')
+    datoCercano = None
+    for dato in datos:
+        distancia = distanciaEuclidiana(dato,punto_medio)
+        if distancia<distancia_minima:
+            distancia_minima = distancia
+            datoCercano = dato
+    centroides = [datoCercano]
+
     k_restantes = k-1
 
     while(k_restantes):
@@ -64,7 +75,7 @@ def heuristica(datos, k):
 
 def k_means(datos, k, criterio_parada, inicializacion):
 
-    #aqui se ejecutaria condicionalmente la inicializacion elegida
+    #aqui se ejecuta condicionalmente la inicializacion elegida
     if(inicializacion):
         centroides = datos[np.random.choice(range(len(datos)), k, replace=False)]   #k means normal
         print(centroides)   #centroides iniciales
@@ -77,10 +88,9 @@ def k_means(datos, k, criterio_parada, inicializacion):
     paso_a_paso = f'Centroides iniciales:\n'
     for i, centroide in enumerate(centroides):
         paso_a_paso += f'Centroide {i + 1}: {centroide}\n'
+    paso_a_paso += "\n"
 
     while True:
-        print (f'Iteración {iteracion}')
-        paso_a_paso += f'Iteración {iteracion}\n'
         
         # Asigna cada punto al centroide más cercano
         asignaciones = []
@@ -109,9 +119,6 @@ def k_means(datos, k, criterio_parada, inicializacion):
         nuevos_centroides = np.array(nuevos_centroides)
         #print ("Centroides actualizados:\n")
         #paso_a_paso += "Centroides actualizados:\n"
-        for i, centroide in enumerate(nuevos_centroides):
-            print(f'Centroide {i + 1}: {centroide}')
-            paso_a_paso += f'Centroide {i + 1}: {centroide}\n'
         
         # Criterio de parada 2: No haya ningún cambio en los centroides
         if criterio_parada == 2 and np.all(centroides == nuevos_centroides):
@@ -119,18 +126,28 @@ def k_means(datos, k, criterio_parada, inicializacion):
             paso_a_paso += "Criterio de parada 2 alcanzado: No hay cambios en los centroides.\n"
             break
         
+        print (f'Iteración {iteracion}')
+        paso_a_paso += f'Iteración {iteracion}\n'
+        iteracion += 1
+
+        for i, centroide in enumerate(nuevos_centroides):
+            print(f'Centroide {i + 1}: {centroide}')
+            paso_a_paso += f'Centroide {i + 1}: {centroide}\n'
+
         centroides = nuevos_centroides
         
         asignaciones_previas = asignaciones.copy()
-        
-        iteracion += 1
-
-    scoreCalisnkiHarabasz(datos,asignaciones)
+    
+    paso_a_paso += "\n\nRESULTADOS:\n"
+    ch_score = scoreCalisnkiHarabasz(datos,asignaciones)
+    paso_a_paso += f'Calinski-Harabasz Score: {ch_score}\n'
+    paso_a_paso += f'Cantidad de iteraciones necesarias: {(iteracion-1)}\n'
     
     return centroides, asignaciones, paso_a_paso
 
 # Función para calcular el Calinski-Harabasz Score
 def scoreCalisnkiHarabasz(datos, asignaciones):
     ch_score = calinski_harabasz_score(datos, asignaciones)
-
     print(f'C-H Score: {ch_score}')
+    
+    return ch_score
