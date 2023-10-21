@@ -1,4 +1,5 @@
 import tkinter as tk
+import numpy as np
 from tkinter import ttk
 import ControladorDataset
 import ControladorKmeans
@@ -9,75 +10,100 @@ def cerrar_programa():
     root.quit()
     root.destroy()
 
+def graficoKmeans(matriz, centroides, asignaciones, titulo, marco):
+
+    for widget in marco.winfo_children():
+        widget.destroy()
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.scatter(matriz[:, 0], matriz[:, 1], c=asignaciones, marker='o')
+    ax.scatter(centroides[:, 0], centroides[:, 1], c='red', marker='x', s=100, label='Centroides')
+    #print(f'{titulo} A GRAFICAR: {centroides}')
+    ax.set_title(titulo)
+    ax.set_xlabel('Eje X')
+    ax.set_ylabel('Eje Y')
+    
+    ax.set_xticks(np.arange(int(matriz[:, 0].min()) - 1, int(matriz[:, 0].max()) + 2, 1))
+    ax.set_yticks(np.arange(int(matriz[:, 1].min()) - 1, int(matriz[:, 1].max()) + 2, 1))
+
+    ax.grid(True, alpha=0.5)
+
+    kmeans_canvas = FigureCanvasTkAgg(fig, master=marco)
+    kmeans_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+def cerrar_programa():
+    root.quit()
+    root.destroy()
+
+def graficoDataset(dataset):
+    for widget in datasetFrame.winfo_children():
+        widget.destroy()
+
+    csv = f'./dataset/dataset_{dataset}.csv'
+    matriz = ControladorDataset.cargar_dataset(csv)
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.scatter(matriz[:, 0], matriz[:, 1], c='blue', marker='o')
+    ax.set_title(f'Dataset {dataset}')
+    ax.set_xlabel('Eje X')
+    ax.set_ylabel('Eje Y')
+
+    ax.set_xticks(np.arange(int(matriz[:, 0].min()) - 1, int(matriz[:, 0].max()) + 2, 1))
+    ax.set_yticks(np.arange(int(matriz[:, 1].min()) - 1, int(matriz[:, 1].max()) + 2, 1))
+
+    ax.grid(True, alpha=0.5)
+
+    dataset_canvas = FigureCanvasTkAgg(fig, master=datasetFrame)
+    dataset_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+    # Borrar gráfico
+    for widget in kmeansFrame.winfo_children():
+        widget.destroy()
+    for widget in kmeansPlusFrame.winfo_children():
+        widget.destroy()
+
 def graficar():
     dataset = nroDataset.get()
     k = k_var.get()
     criterioParada = int(nroCritero.get())
     csv = f'./dataset/dataset_{dataset}.csv'
     matriz = ControladorDataset.cargar_dataset(csv)
-    centroides, asignaciones, pasos = ControladorKmeans.k_means(matriz, k, criterioParada, 0)
     
-    # Muestra los pasos en el área de texto
+    centroides_kmeans, asignaciones_kmeans, pasos_kmeans = ControladorKmeans.k_means(matriz, k, criterioParada, 1)
+    centroides_kmeans_plus, asignaciones_kmeans_plus, pasos_kmeans_plus = ControladorKmeans.k_means(matriz, k, criterioParada, 0)
+
     texto_area.delete(1.0, tk.END)  # Borra el contenido anterior
-    texto_area.insert(tk.END, pasos)
+    texto_area.insert(tk.END, f'Pasos K-Means:\n{pasos_kmeans}\n')
+    texto_area_kmeans_plus.delete(1.0, tk.END)  
+    texto_area_kmeans_plus.insert(tk.END, f'Pasos K-Means++:\n{pasos_kmeans_plus}')
 
-    graficoKmeans(matriz, centroides, asignaciones)
-
-def graficoDataset(dataset):
-    for widget in datasetFrame.winfo_children():
-        widget.destroy()
-
-    # Grafica el dataset seleccionado
-    csv = f'./dataset/dataset_{dataset}.csv'
-    matriz = ControladorDataset.cargar_dataset(csv)
-    plt.figure(figsize=(5, 5))
-    plt.scatter(matriz[:, 0], matriz[:, 1], c='blue', marker='o')
-    plt.title(f'Dataset {dataset}')
-    plt.xlabel('Eje X')
-    plt.ylabel('Eje Y')
-    dataset_canvas = FigureCanvasTkAgg(plt.gcf(), master=datasetFrame)
-    dataset_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-
-    # Borrar gráfico
-    for widget in kmeansFrame.winfo_children():
-        widget.destroy()
-
-def graficoKmeans(matriz, centroides, asignaciones):
-    # Borrar gráfico
-    for widget in kmeansFrame.winfo_children():
-        widget.destroy()
-
-    # Grafica los resultados del K-Means
-    plt.figure(figsize=(5, 5))
-    plt.scatter(matriz[:, 0], matriz[:, 1], c=asignaciones, marker='o')
-    plt.scatter(centroides[:, 0], centroides[:, 1], c='red', marker='x', s=100, label='Centroides')
-    plt.title('Resultados K-Means')
-    plt.xlabel('Eje X')
-    plt.ylabel('Eje Y')
-    kmeans_canvas = FigureCanvasTkAgg(plt.gcf(), master=kmeansFrame)
-    kmeans_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+    graficoKmeans(matriz, centroides_kmeans, asignaciones_kmeans, "Resultados K-Means", kmeansFrame)
+    graficoKmeans(matriz, centroides_kmeans_plus, asignaciones_kmeans_plus, "Resultados K-Means++", kmeansPlusFrame)
 
 root = tk.Tk()
-root.title("K-Means Visualizer")
+root.title("K-Means")
 root.protocol("WM_DELETE_WINDOW", cerrar_programa)
 
 mainFrame = ttk.Frame(root)
 mainFrame.pack(padx=20, pady=20)
 
-datasetFrame = tk.LabelFrame(mainFrame, text="Dataset",font=("Arial", 14))
+datasetFrame = tk.LabelFrame(mainFrame, text="Dataset", font=("Arial", 14))
 datasetFrame.grid(row=0, column=0)
 
-kmeansFrame = tk.LabelFrame(mainFrame, text="Resultados K-Means",font=("Arial", 14))
+kmeansFrame = tk.LabelFrame(mainFrame, text="Resultados K-Means", font=("Arial", 14))
 kmeansFrame.grid(row=0, column=1)
+
+kmeansPlusFrame = tk.LabelFrame(mainFrame, text="Resultados K-Means++", font=("Arial", 14))
+kmeansPlusFrame.grid(row=0, column=2)
 
 controlesFrame = tk.LabelFrame(mainFrame)
 controlesFrame.grid(row=1, column=0, columnspan=2)
 
-dataset_label = tk.Label(controlesFrame, text="Seleccionar Dataset:",font=("Arial", 14))
+dataset_label = tk.Label(controlesFrame, text="Seleccionar Dataset:", font=("Arial", 14))
 dataset_label.grid(row=0, column=0)
 
 nroDataset = tk.StringVar()
-nroDataset.set("1")  # Por defecto, se grafica el 1
+nroDataset.set("1")  # Por defecto se grafica el dataset1
 
 # Seleccionar dataset 
 def seleccionarDataset():
@@ -93,14 +119,14 @@ dataset2_button.grid(row=0, column=2)
 dataset3_button = ttk.Radiobutton(controlesFrame, text="Dataset 3", variable=nroDataset, value="3", command=seleccionarDataset)
 dataset3_button.grid(row=0, column=3)
 
-k_label = tk.Label(controlesFrame, text="Valor de K:",font=("Arial", 14))
+k_label = tk.Label(controlesFrame, text="Valor de K:", font=("Arial", 14))
 k_label.grid(row=1, column=0)
 k_var = tk.IntVar()
 k_dropdown = ttk.Combobox(controlesFrame, textvariable=k_var, values=[2, 3, 4, 5], state="readonly")
 k_dropdown.grid(row=1, column=1)
 k_dropdown.set(2)
 
-criterio_label = tk.Label(controlesFrame, text="Criterio de Parada:",font=("Arial", 14))
+criterio_label = tk.Label(controlesFrame, text="Criterio de Parada:", font=("Arial", 14))
 criterio_label.grid(row=2, column=0)
 nroCritero = tk.StringVar()
 nroCritero.set("1")  
@@ -114,13 +140,14 @@ criterioOpcion2.grid(row=2, column=2)
 botonGraficar = ttk.Button(controlesFrame, text="Graficar Resultados", command=graficar, style="TButton")
 botonGraficar.grid(row=3, column=0, columnspan=2)
 
-# Configurar el estilo del botón directamente
 ttk.Style().configure("TButton", font=("Arial", 12), padding=(10, 5))
 ttk.Style().map("TButton", foreground=[("active", "blue")], background=[("active", "lightgray")])
 
-# Agregar un área de texto para mostrar los pasos
 texto_area = tk.Text(controlesFrame, height=10, width=40)
-texto_area.grid(row=4, column=0, columnspan=3)
+texto_area.grid(row=4, column=0, padx=5)
+
+texto_area_kmeans_plus = tk.Text(controlesFrame, height=10, width=40)
+texto_area_kmeans_plus.grid(row=4, column=2, padx=5)
 
 graficoDataset("1")
 

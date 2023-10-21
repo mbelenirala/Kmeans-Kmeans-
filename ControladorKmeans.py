@@ -129,10 +129,6 @@ def k_means(datos, k, criterio_parada, inicializacion):
     
     return centroides, asignaciones, paso_a_paso
 
-def mostrar_resultados_kmeans_plus_plus(matriz_estandarizada, k, criterio_parada):
-    # Por ahora, no hacemos nada en esta función
-    pass
-
 # Función para calcular el Calinski-Harabasz Score
 def scoreCalisnkiHarabasz(datos, asignaciones):
     ch_score = calinski_harabasz_score(datos, asignaciones)
