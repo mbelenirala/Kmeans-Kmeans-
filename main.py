@@ -1,5 +1,4 @@
 import tkinter as tk
-import numpy as np
 from tkinter import ttk
 import ControladorDataset
 import ControladorKmeans
@@ -12,20 +11,18 @@ def cerrar_programa():
     root.destroy()
 
 def graficoKmeans(matriz, centroides, asignaciones, titulo, marco):
-
     for widget in marco.winfo_children():
         widget.destroy()
 
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.scatter(matriz[:, 0], matriz[:, 1], c=asignaciones, marker='o')
     ax.scatter(centroides[:, 0], centroides[:, 1], c='red', marker='x', s=100, label='Centroides')
-    #print(f'{titulo} A GRAFICAR: {centroides}')
     ax.set_title(titulo)
     ax.set_xlabel('Eje X')
     ax.set_ylabel('Eje Y')
     
-    ax.set_xticks(np.arange(int(matriz[:, 0].min()) - 1, int(matriz[:, 0].max()) + 2, 1))
-    ax.set_yticks(np.arange(int(matriz[:, 1].min()) - 1, int(matriz[:, 1].max()) + 2, 1))
+    ax.set_xticks(range(int(matriz[:, 0].min()) - 1, int(matriz[:, 0].max()) + 2, 1))
+    ax.set_yticks(range(int(matriz[:, 1].min()) - 1, int(matriz[:, 1].max()) + 2, 1))
 
     ax.grid(True, alpha=0.5)
 
@@ -49,8 +46,8 @@ def graficoDataset(dataset):
     ax.set_xlabel('Eje X')
     ax.set_ylabel('Eje Y')
 
-    ax.set_xticks(np.arange(int(matriz[:, 0].min()) - 1, int(matriz[:, 0].max()) + 2, 1))
-    ax.set_yticks(np.arange(int(matriz[:, 1].min()) - 1, int(matriz[:, 1].max()) + 2, 1))
+    ax.set_xticks(range(int(matriz[:, 0].min()) - 1, int(matriz[:, 0].max()) + 2, 1))
+    ax.set_yticks(range(int(matriz[:, 1].min()) - 1, int(matriz[:, 1].max()) + 2, 1))
 
     ax.grid(True, alpha=0.5)
 
@@ -88,12 +85,31 @@ root.protocol("WM_DELETE_WINDOW", cerrar_programa)
 screen = screeninfo.get_monitors()[0]
 width, height = screen.width, screen.height
 
-# Establecer las dimensiones de la ventana principal
-root.geometry("%dx%d" % (width, height))
-#root.state("zoomed")
+root.geometry(f"{width}x{height}")
+root.state("zoomed")
+# Crear un Canvas para agregar barras de desplazamiento
+canvas = tk.Canvas(root)
+canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-mainFrame = ttk.Frame(root)
-mainFrame.pack(padx=10, pady=10, fill='both', expand=True)
+# Crear barras de desplazamiento
+y_scrollbar = ttk.Scrollbar(root, orient="vertical", command=canvas.yview)
+y_scrollbar.pack(side=tk.RIGHT, fill="y")
+canvas.configure(yscrollcommand=y_scrollbar.set)
+
+# Crear una barra de desplazamiento horizontal en la parte superior
+x_scrollbar = ttk.Scrollbar(root, orient="horizontal", command=canvas.xview)
+x_scrollbar.pack(side=tk.TOP, fill="x")
+canvas.configure(xscrollcommand=x_scrollbar.set)
+
+# Crear un nuevo frame dentro del canvas
+mainFrame = ttk.Frame(canvas)
+canvas.create_window((0, 0), window=mainFrame, anchor="nw")
+
+# Permitir desplazamiento con el mouse
+def _on_canvas_configure(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+canvas.bind("<Configure>", _on_canvas_configure)
 
 datasetFrame = tk.LabelFrame(mainFrame, text="Dataset", font=("Arial", 14))
 datasetFrame.grid(row=0, column=0)
@@ -105,10 +121,7 @@ kmeansPlusFrame = tk.LabelFrame(mainFrame, text="Resultados K-Means++", font=("A
 kmeansPlusFrame.grid(row=0, column=2)
 
 controlesFrame = tk.LabelFrame(mainFrame)
-controlesFrame.grid(row=1, column=0, columnspan=3, rowspan=2) 
-
-dataset_label = tk.Label(controlesFrame, text="Seleccionar Dataset:", font=("Arial", 14))
-dataset_label.grid(row=0, column=0)
+controlesFrame.grid(row=1, column=0, columnspan=3, rowspan=2)
 
 nroDataset = tk.StringVar()
 nroDataset.set("1")  # Por defecto se grafica el dataset1
