@@ -5,6 +5,7 @@ import ControladorKmeans
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import screeninfo
+from PIL import Image, ImageTk
 
 def cerrar_programa():
     root.quit()
@@ -120,8 +121,11 @@ kmeansFrame.grid(row=0, column=1)
 kmeansPlusFrame = tk.LabelFrame(mainFrame, text="Resultados K-Means++", font=("Arial", 14))
 kmeansPlusFrame.grid(row=0, column=2)
 
+referenciasFrame = tk.LabelFrame(mainFrame, text="Referencias Gráficas", font=("Arial", 14))
+referenciasFrame.grid(row=1, column=0)
+
 controlesFrame = tk.LabelFrame(mainFrame)
-controlesFrame.grid(row=1, column=0, columnspan=3, rowspan=2)
+controlesFrame.grid(row=2, column=0, columnspan=3, rowspan=2)
 
 nroDataset = tk.StringVar()
 nroDataset.set("1")  # Por defecto se grafica el dataset1
@@ -130,6 +134,43 @@ nroDataset.set("1")  # Por defecto se grafica el dataset1
 def seleccionarDataset():
     seleccion = nroDataset.get()
     graficoDataset(seleccion)  
+
+refDataset_label = tk.Label(referenciasFrame, text="Dato del dataset:", font=("Arial", 10))
+refDataset_label.grid(row=0, column=0)
+#REF IMG Dataset
+imgRefDataset = ImageTk.PhotoImage(Image.open("img/imgRefDataset.png"))
+imgRefDataset_label = tk.Label(referenciasFrame, image=imgRefDataset)
+imgRefDataset_label.grid(row=0, column=1)
+
+refKmeans_label = tk.Label(referenciasFrame, text="Dato de un cluster:", font=("Arial", 10))
+refKmeans_label.grid(row=0, column=2)
+#REF IMG Cluster 1
+imgRefCluster1 = ImageTk.PhotoImage(Image.open("img/imgRefCluster1.png"))
+imgRefCluster1_label = tk.Label(referenciasFrame, image=imgRefCluster1)
+imgRefCluster1_label.grid(row=0, column=3)
+#REF IMG Cluster 2
+imgRefCluster2 = ImageTk.PhotoImage(Image.open("img/imgRefCluster2.png"))
+imgRefCluster2_label = tk.Label(referenciasFrame, image=imgRefCluster2)
+imgRefCluster2_label.grid(row=0, column=4)
+#REF IMG Cluster 3
+imgRefCluster3 = ImageTk.PhotoImage(Image.open("img/imgRefCluster3.png"))
+imgRefCluster3_label = tk.Label(referenciasFrame, image=imgRefCluster3)
+imgRefCluster3_label.grid(row=0, column=5)
+#REF IMG Cluster 4
+imgRefCluster4 = ImageTk.PhotoImage(Image.open("img/imgRefCluster4.png"))
+imgRefCluster4_label = tk.Label(referenciasFrame, image=imgRefCluster4)
+imgRefCluster4_label.grid(row=0, column=6)
+#REF IMG Cluster 5
+imgRefCluster5 = ImageTk.PhotoImage(Image.open("img/imgRefCluster5.png"))
+imgRefCluster5_label = tk.Label(referenciasFrame, image=imgRefCluster5)
+imgRefCluster5_label.grid(row=0, column=7)
+
+refCentroide_label = tk.Label(referenciasFrame, text="Centroide final:", font=("Arial", 10))
+refCentroide_label.grid(row=0, column=8)
+#REF IMG Centroide
+imgRefCentroide = ImageTk.PhotoImage(Image.open("img/imgRefCentroide.png"))
+imgRefCentroide_label = tk.Label(referenciasFrame, image=imgRefCentroide)
+imgRefCentroide_label.grid(row=0, column=9)
 
 dataset1_button = ttk.Radiobutton(controlesFrame, text="Dataset 1", variable=nroDataset, value="1", command=seleccionarDataset)
 dataset1_button.grid(row=0, column=1)
