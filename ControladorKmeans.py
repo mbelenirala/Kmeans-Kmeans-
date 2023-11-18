@@ -73,7 +73,7 @@ def heuristica(datos, k):
     print(centroides)   #centroides iniciales
     return centroides
 
-def k_means(datos, k, criterio_parada, inicializacion):
+def k_means(datos, k, inicializacion):
 
     #aqui se ejecuta condicionalmente la inicializacion elegida
     if(inicializacion):
@@ -83,11 +83,11 @@ def k_means(datos, k, criterio_parada, inicializacion):
         centroides = heuristica(datos, k)   #k means ++
 
     asignaciones_previas = np.empty(0)
-
+    centroides_iniciales = centroides.copy() 
     iteracion = 1
     paso_a_paso = f'Centroides iniciales:\n'
     for i, centroide in enumerate(centroides):
-        paso_a_paso += f'Centroide {i + 1}: {centroide}\n'
+        paso_a_paso += f'Centroide {i + 1}: {tuple(map(lambda x: round(x, 2), centroide))}\n'
     paso_a_paso += "\n"
 
     while True:
@@ -99,12 +99,6 @@ def k_means(datos, k, criterio_parada, inicializacion):
             asignaciones.append(centroideCercano)
         
         asignaciones = np.array(asignaciones)
-        
-        # Criterio de parada 1: No haya ninguna reasignación de datos a diferentes clusters
-        if criterio_parada == 1 and np.array_equal(asignaciones, asignaciones_previas):
-            print ("Criterio de parada 1 alcanzado: No hay reasignaciones.\n")
-            paso_a_paso += "Criterio de parada 1 alcanzado: No hay reasignaciones.\n"
-            break
         
         # Actualizar los centroides como el promedio de los puntos asignados
         nuevos_centroides = []
@@ -120,10 +114,16 @@ def k_means(datos, k, criterio_parada, inicializacion):
         #print ("Centroides actualizados:\n")
         #paso_a_paso += "Centroides actualizados:\n"
         
-        # Criterio de parada 2: No haya ningún cambio en los centroides
-        if criterio_parada == 2 and np.all(centroides == nuevos_centroides):
-            print("Criterio de parada 2 alcanzado: No hay cambios en los centroides.")
-            paso_a_paso += "Criterio de parada 2 alcanzado: No hay cambios en los centroides.\n"
+        
+        if np.all(centroides == nuevos_centroides) or np.array_equal(asignaciones, asignaciones_previas):
+            
+            if np.array_equal(asignaciones, asignaciones_previas): 
+              print("Criterio de parada 1 alcanzado: No hay reasignaciones en los cluster.")
+              paso_a_paso += "Criterio de parada 1 alcanzado: No hay reasignaciones en los cluster.\n"
+            else: 
+                if np.all(centroides == nuevos_centroides):
+                    print("Criterio de parada 2 alcanzado: No hay cambios en los centroides.")
+                    paso_a_paso += "Criterio de parada 2 alcanzado: No hay cambios en los centroides.\n"
             break
         
         print (f'Iteración {iteracion}')
@@ -132,7 +132,8 @@ def k_means(datos, k, criterio_parada, inicializacion):
 
         for i, centroide in enumerate(nuevos_centroides):
             print(f'Centroide {i + 1}: {centroide}')
-            paso_a_paso += f'Centroide {i + 1}: {centroide}\n'
+            paso_a_paso += f'Centroide {i + 1}: {tuple(map(lambda x: round(x, 2), centroide))}\n'
+            
 
         centroides = nuevos_centroides
         
@@ -143,7 +144,7 @@ def k_means(datos, k, criterio_parada, inicializacion):
     paso_a_paso += f'Calinski-Harabasz Score: {ch_score}\n'
     paso_a_paso += f'Cantidad de iteraciones necesarias: {(iteracion-1)}\n'
     
-    return centroides, asignaciones, paso_a_paso
+    return centroides_iniciales, centroides, asignaciones, paso_a_paso
 
 # Función para calcular el Calinski-Harabasz Score
 def scoreCalisnkiHarabasz(datos, asignaciones):
