@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import ControladorDataset
 import ControladorKmeans
 import matplotlib.pyplot as plt
@@ -95,6 +96,10 @@ def graficarNuevoDataset(dataset):
     for widget in kmeansPlusFrame.winfo_children():
         widget.destroy()
 
+vGlobal_asignacion_km = None
+vGlobal_asignacion_km_plus = None
+vGlobal_datos = None
+
 def graficar():
     dataset = nroDataset.get()
     k = k_var.get()
@@ -104,10 +109,17 @@ def graficar():
         #aca modificar para que agarre el .csv del nuevo dataset 
         csv =  nuevo_dataset_path
     matriz = ControladorDataset.cargar_dataset(csv)
+    global vGlobal_datos
+    vGlobal_datos = matriz
     
 
     centroides_iniciales_kmeans,centroides_kmeans, asignaciones_kmeans, pasos_kmeans = ControladorKmeans.k_means(matriz, k, 1)
     centroides_iniciales_kmeansplus,centroides_kmeans_plus, asignaciones_kmeans_plus, pasos_kmeans_plus = ControladorKmeans.k_means(matriz, k, 0)
+
+    global vGlobal_asignacion_km
+    global vGlobal_asignacion_km_plus
+    vGlobal_asignacion_km = asignaciones_kmeans
+    vGlobal_asignacion_km_plus = asignaciones_kmeans_plus
 
     texto_area.delete(1.0, tk.END)  # Borra el contenido anterior
     texto_area.insert(tk.END, f'Pasos K-Means:\n{pasos_kmeans}\n')
@@ -116,6 +128,37 @@ def graficar():
 
     graficoKmeans(matriz, centroides_iniciales_kmeans, centroides_kmeans, asignaciones_kmeans, "Resultados K-Means", kmeansFrame)
     graficoKmeans(matriz, centroides_iniciales_kmeansplus,centroides_kmeans_plus, asignaciones_kmeans_plus, "Resultados K-Means++", kmeansPlusFrame)
+
+#Funcion ejecutada desde botón para invocar al cálculo de CH Score y Mostrar al usuario su resultado
+def chscore_function():
+    global vGlobal_asignacion_km
+    global vGlobal_asignacion_km_plus
+
+    if((vGlobal_asignacion_km is None) and (vGlobal_asignacion_km_plus is None)):   #Comprobar si fue ejecutado alguna vez el gráfico para poder mostrar o no el CH score
+        #Set no ejecutado. Advertir error
+        messagebox.showwarning("Error", "Debes graficar los resultados antes de comparar sus Calinski-Harabasz Score")
+    else:
+        #Mostrar C-H Score
+        global vGlobal_datos
+        chscore_km = ControladorKmeans.scoreCalisnkiHarabasz(vGlobal_datos, vGlobal_asignacion_km)
+        chscore_km_plus = ControladorKmeans.scoreCalisnkiHarabasz(vGlobal_datos, vGlobal_asignacion_km_plus)
+
+        texto_chscore = "Explicacion: es una métrica que evalúa el grado de agrupación de un conjunto de datos. Mientras más alto sea el score, significa que tiene clusters más cohesivos y mejor separados. Por lo que al comparar los scores:\n\n"
+        #Explicación resultado
+        texto_chscore += f'Calinski-Harabasz Score K-means: {chscore_km}\n'
+        texto_chscore += f'Calinski-Harabasz Score K-means ++: {chscore_km_plus}\n\n'
+        texto_chscore += "Podemos concluir que en esta ejecución: "
+
+        if(chscore_km == chscore_km_plus):
+            texto_chscore += "AMBOS algoritmos llegaron a un mismo grado de agrupación." #Resultados iguales
+        else:
+            if(chscore_km > chscore_km_plus):
+                texto_chscore += "el algoritmo K-MEANS tiene un mejor grado de agrupación." #KM es mejor
+            else:
+                texto_chscore += "el algoritmo K-MEANS++ tiene un mejor grado de agrupación." #KM ++ es mejor
+        
+        messagebox.showinfo("Calinski-Harabasz Score", texto_chscore)
+
 
 root = tk.Tk()
 root.title("K-Means")
@@ -221,7 +264,7 @@ refCentroideIni_label.grid(row=0, column=10)
 #REF IMG Centroide
 imgRefCentroideIni = ImageTk.PhotoImage(Image.open("img/imgRefCentroideIni.png"))
 imgRefCentroideIni_label = tk.Label(referenciasFrame, image=imgRefCentroideIni)
-imgRefCentroideIni_label.grid(row=0, column=111)
+imgRefCentroideIni_label.grid(row=0, column=11)
 
 dataset1_button = ttk.Radiobutton(controlesFrame, text="Dataset 1", variable=nroDataset, value="1", command=seleccionarDataset)
 dataset1_button.grid(row=0, column=1)
@@ -262,6 +305,9 @@ k_dropdown.set(2)
 
 botonGraficar = ttk.Button(controlesFrame, text="Graficar Resultados", command=graficar, style="TButton")
 botonGraficar.grid(row=3, column=0, columnspan=2)
+
+botonCHScore = ttk.Button(controlesFrame, text="Calinski-Harabasz Score", command=chscore_function, style="TButton")
+botonCHScore.grid(row=3, column=1, columnspan=2)
 
 ttk.Style().configure("TButton", font=("Arial", 12), padding=(10, 5))
 ttk.Style().map("TButton", foreground=[("active", "blue")], background=[("active", "lightgray")])

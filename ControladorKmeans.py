@@ -105,7 +105,7 @@ def k_means(datos, k, inicializacion):
         for i in range(k):
             cluster_points = datos[asignaciones == i]
             if len(cluster_points) > 0:
-                nuevo_centroide = mediaDatos(cluster_points)             #nuevo_centroide = np.mean(cluster_points, axis=0)  CODIGO VIEJO
+                nuevo_centroide = mediaDatos(cluster_points)
                 nuevos_centroides.append(nuevo_centroide)
             else:
                 nuevos_centroides.append(centroides[i])
@@ -140,15 +140,25 @@ def k_means(datos, k, inicializacion):
         asignaciones_previas = asignaciones.copy()
     
     paso_a_paso += "\n\nRESULTADOS:\n"
-    ch_score = scoreCalisnkiHarabasz(datos,asignaciones)
-    paso_a_paso += f'Calinski-Harabasz Score: {ch_score}\n'
-    paso_a_paso += f'Cantidad de iteraciones necesarias: {(iteracion-1)}\n'
+    paso_a_paso += f'Cantidad de iteraciones necesarias: {(iteracion-1)}\n\n'
+    paso_a_paso += "Porcentaje de elementos agrupados en:"
+
+    for i in range(k):
+        cluster_points = datos[asignaciones == i]
+        porcentaje_agrupados = len(cluster_points)*100/len(datos)
+        porcentaje_agrupados = round(porcentaje_agrupados,2)
+        paso_a_paso += f'\nCluster {(i+1)}: {porcentaje_agrupados}'
+    
+    #ch_score = scoreCalisnkiHarabasz(datos,asignaciones)
+    #paso_a_paso += f'Calinski-Harabasz Score: {ch_score}\n'
     
     return centroides_iniciales, centroides, asignaciones, paso_a_paso
 
 # Función para calcular el Calinski-Harabasz Score
 def scoreCalisnkiHarabasz(datos, asignaciones):
     ch_score = calinski_harabasz_score(datos, asignaciones)
+    #print(f'C-H Score: {ch_score}')
+    ch_score = round(ch_score,2)
     print(f'C-H Score: {ch_score}')
     
     return ch_score
