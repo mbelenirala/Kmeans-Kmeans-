@@ -20,8 +20,13 @@ def graficoKmeans(matriz, centroides_iniciales,centroides, asignaciones, titulo,
     for widget in marco.winfo_children():
         widget.destroy()
 
+    colores_pastel = ['#FFB6C1', '#FFD700', '#98FB98', '#ADD8E6', '#FFA07A', '#87CEEB']
+
+    # Mapear manualmente los colores a cada asignación
+    colores_asignaciones = [colores_pastel[i] for i in asignaciones]
+
     fig, ax = plt.subplots(figsize=(5, 5))
-    ax.scatter(matriz[:, 0], matriz[:, 1], c=asignaciones, marker='o')
+    ax.scatter(matriz[:, 0], matriz[:, 1], c=colores_asignaciones, marker='o')
     for i, (x, y) in enumerate(zip(centroides[:, 0], centroides[:, 1])):
         ax.scatter(x, y, c='red', marker='x', s=100, label=f'Centroide Final {i + 1}')
         ax.text(x + 0.02, y, f'C{i + 1}({x:.2f}, {y:.2f})', fontsize=10, ha='left', va='center', color='darkred', fontweight='bold')
