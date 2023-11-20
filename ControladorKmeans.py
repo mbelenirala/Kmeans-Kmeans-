@@ -76,6 +76,7 @@ def heuristica(datos, k):
 def k_means(datos, k, inicializacion):
 
     #aqui se ejecuta condicionalmente la inicializacion elegida
+    porcentajes = ''
     if(inicializacion):
         centroides = datos[np.random.choice(range(len(datos)), k, replace=False)]   #k means normal
         print(centroides)   #centroides iniciales
@@ -142,17 +143,18 @@ def k_means(datos, k, inicializacion):
     paso_a_paso += "\n\nRESULTADOS:\n"
     paso_a_paso += f'Cantidad de iteraciones necesarias: {(iteracion-1)}\n\n'
     paso_a_paso += "Porcentaje de elementos agrupados en:"
-
+    
     for i in range(k):
         cluster_points = datos[asignaciones == i]
         porcentaje_agrupados = len(cluster_points)*100/len(datos)
         porcentaje_agrupados = round(porcentaje_agrupados,2)
         paso_a_paso += f'\nCluster {(i+1)}: {porcentaje_agrupados}'
+        porcentajes += f'\nCluster {(i+1)}: {porcentaje_agrupados}%'
     
     #ch_score = scoreCalisnkiHarabasz(datos,asignaciones)
     #paso_a_paso += f'Calinski-Harabasz Score: {ch_score}\n'
     
-    return centroides_iniciales, centroides, asignaciones, paso_a_paso
+    return centroides_iniciales, centroides, asignaciones, paso_a_paso, porcentajes
 
 # Función para calcular el Calinski-Harabasz Score
 def scoreCalisnkiHarabasz(datos, asignaciones):

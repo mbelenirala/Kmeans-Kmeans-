@@ -118,8 +118,8 @@ def graficar():
     vGlobal_datos = matriz
     
 
-    centroides_iniciales_kmeans,centroides_kmeans, asignaciones_kmeans, pasos_kmeans = ControladorKmeans.k_means(matriz, k, 1)
-    centroides_iniciales_kmeansplus,centroides_kmeans_plus, asignaciones_kmeans_plus, pasos_kmeans_plus = ControladorKmeans.k_means(matriz, k, 0)
+    centroides_iniciales_kmeans,centroides_kmeans, asignaciones_kmeans, pasos_kmeans,porcentajeskmeans = ControladorKmeans.k_means(matriz, k, 1)
+    centroides_iniciales_kmeansplus,centroides_kmeans_plus, asignaciones_kmeans_plus, pasos_kmeans_plus, porcentajeskmeansplus = ControladorKmeans.k_means(matriz, k, 0)
 
     global vGlobal_asignacion_km
     global vGlobal_asignacion_km_plus
@@ -133,6 +133,15 @@ def graficar():
 
     graficoKmeans(matriz, centroides_iniciales_kmeans, centroides_kmeans, asignaciones_kmeans, "Resultados K-Means", kmeansFrame)
     graficoKmeans(matriz, centroides_iniciales_kmeansplus,centroides_kmeans_plus, asignaciones_kmeans_plus, "Resultados K-Means++", kmeansPlusFrame)
+    
+    for widget in porcentajeFrame.winfo_children():
+        widget.destroy()
+    for widget in porcentajePFrame.winfo_children():
+        widget.destroy()
+    tk.Label(porcentajeFrame, text=f"{porcentajeskmeans}").pack()
+    tk.Label(porcentajePFrame, text=f"{porcentajeskmeansplus}").pack()
+
+
 
 #Funcion ejecutada desde botón para invocar al cálculo de CH Score y Mostrar al usuario su resultado
 def chscore_function():
@@ -209,6 +218,12 @@ kmeansPlusFrame.grid(row=0, column=2)
 
 referenciasFrame = tk.LabelFrame(mainFrame, text="Referencias Gráficas", font=("Arial", 14))
 referenciasFrame.grid(row=1, column=0)
+
+porcentajeFrame = tk.LabelFrame(mainFrame, text="Agrupamiento por cluster K-Means", font=("Arial", 14))
+porcentajeFrame.grid(row=1, column=1)
+
+porcentajePFrame = tk.LabelFrame(mainFrame, text="Agrupamiento por cluster K-Means++", font=("Arial", 14))
+porcentajePFrame.grid(row=1, column=2)
 
 controlesFrame = tk.LabelFrame(mainFrame)
 controlesFrame.grid(row=2, column=0, columnspan=3, rowspan=2)
